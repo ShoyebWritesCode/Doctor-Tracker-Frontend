@@ -1,5 +1,12 @@
 # Doctor Tracker
 
+> [!IMPORTANT]
+> **THIS PROJECT HAS TWO READMEs — PLEASE READ BOTH.**
+>
+> You are reading the **Frontend README** (application UI, screenshots and client setup).
+>
+> **[→ OPEN THE BACKEND README: API, MongoDB, authentication and server setup](https://github.com/ShoyebWritesCode/Doctor-Tracker-Backend/blob/main/README.md)**
+
 Doctor Tracker is a focused administrative workspace for managing doctors, their patients, and operational trends. This repository contains the standalone Next.js client; it communicates with the separate Express API through a same-origin `/api/v1` proxy.
 
 [Live application](https://doctor-tracker-shoyeb.vercel.app) · [Backend repository](https://github.com/ShoyebWritesCode/Doctor-Tracker-Backend) · [API health](https://doctor-tracker-api-shoyeb.vercel.app/health) · [API contract](https://doctor-tracker-api-shoyeb.vercel.app/api-docs/openapi.json)
