@@ -50,7 +50,11 @@ export function SelectField({
     <div className={cn("grid gap-2", className)}>
       <label className="text-ink text-sm font-semibold" htmlFor={selectId}>
         {label}
-        {required ? <span className="text-danger ml-1">*</span> : null}
+        {required ? (
+          <span aria-hidden="true" className="text-danger ml-1">
+            *
+          </span>
+        ) : null}
       </label>
       <SelectPrimitive.Root
         disabled={disabled}

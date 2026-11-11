@@ -31,7 +31,11 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
     <div className="grid gap-2">
       <label className="text-ink text-sm font-semibold" htmlFor={inputId}>
         {label}
-        {required ? <span className="text-danger ml-1">*</span> : null}
+        {required ? (
+          <span aria-hidden="true" className="text-danger ml-1">
+            *
+          </span>
+        ) : null}
       </label>
       <input
         aria-describedby={describedBy}

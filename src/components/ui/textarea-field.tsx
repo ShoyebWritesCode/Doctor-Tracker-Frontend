@@ -33,7 +33,11 @@ export const TextareaField = forwardRef<HTMLTextAreaElement, TextareaFieldProps>
       <div className="grid gap-2">
         <label className="text-ink text-sm font-semibold" htmlFor={inputId}>
           {label}
-          {required ? <span className="text-danger ml-1">*</span> : null}
+          {required ? (
+            <span aria-hidden="true" className="text-danger ml-1">
+              *
+            </span>
+          ) : null}
         </label>
         <textarea
           aria-describedby={describedBy}
