@@ -88,7 +88,7 @@ Start `npm run test:auth-server` in the backend repository to use a disposable M
 ```bash
 AUTH_E2E_EMAIL=browser-test@example.test \
 AUTH_E2E_PASSWORD=fictional-browser-verification-only \
-npm run test:e2e -- --workers=1
+npm run test:e2e -- --project=desktop-chromium
 ```
 
 The suite checks private cookies, login failures, safe redirects, direct navigation, refresh, session revocation, sign-out/Back navigation, and the doctor/patient workflows above. It also reconciles dashboard metrics with real API/list totals, checks mutation refresh, URL/time-zone persistence, single-day zero data, keyboard inspection, loading, and retry. It covers duplicate doctor emails, preserved form values after server failures, retryable list/deletion failures, count refresh, final-page correction, keyboard focus, and layout at 360, 768, 1024, and 1440 px, including maximal unbroken names. Successful integration requests use the actual API and disposable database; only failure scenarios inject HTTP errors. Without the two test credential variables, backend integration cases are explicitly skipped; the login and component-gallery tests still run.
@@ -105,9 +105,23 @@ Then run from this repository:
 E2E_BASE_URL=http://localhost:3001 API_PROXY_TARGET=http://localhost:4001 \
 AUTH_E2E_EMAIL=browser-test@example.test \
 AUTH_E2E_PASSWORD=fictional-browser-verification-only \
-npm run test:e2e -- --workers=1
+npm run test:e2e -- --project=desktop-chromium
 ```
 
 Playwright uses the configured localhost origin, launches Next.js on that port, and uses a separate ignored `.next-e2e` build directory. Run with one worker when reconciling directory-wide totals against a shared fixture; concurrent mutations can legitimately change independent live reads. The fixture is deliberately disposable and all credentials above are fictional.
 
 For everyday development, configure the backend `.env` with a persistent MongoDB URI and administrator seed credentials, run its seed command, and start the backend normally. `.env` and `.env.local` are ignored by Git.
+
+### Production quality gate
+
+With both repositories installed as siblings, this starts and stops a fresh disposable API and an optimized Next.js build automatically:
+
+```bash
+E2E_START_BACKEND=1 E2E_PRODUCTION=1 \
+E2E_BASE_URL=http://localhost:3002 API_PROXY_TARGET=http://localhost:4002 \
+npm run test:e2e -- --project=desktop-chromium
+```
+
+Repeat with `--project=mobile-chromium`; each invocation gets a fresh database and authentication budget. Do not run both integration projects against one long-lived shared fixture. CI runs them in separate jobs with a reviewed, pinned backend revision. No Atlas credentials or repository secrets are required. Production verification fails if credentials are missing rather than silently skipping integration cases.
+
+The production suite also checks no-JavaScript sign-in, offline mutation recovery, forbidden/throttled/malformed responses, keyboard focus, and axe accessibility rules. Development-gallery tests are intentionally skipped in production; a separate check requires that route to return 404. Browser retries are disabled, and failed traces plus accessibility reports are saved under ignored `test-results/`. See [the quality audit](docs/quality-audit.md) for findings, measured performance, reproduction steps, and limitations.
