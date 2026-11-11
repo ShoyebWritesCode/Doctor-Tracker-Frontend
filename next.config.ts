@@ -18,6 +18,7 @@ function apiProxyTarget(): string {
 }
 
 const nextConfig: NextConfig = {
+  distDir: process.env.E2E_ISOLATED_BUILD === "1" ? ".next-e2e" : ".next",
   agentRules: false,
   allowedDevOrigins: ["127.0.0.1"],
   experimental: {

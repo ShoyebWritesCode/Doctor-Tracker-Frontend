@@ -177,18 +177,29 @@ Patient create/update forms enforce at least one contact method after the user h
 - `createdFrom` and `createdTo` use the same boundary rules.
 - `sort`: creation/name sorts plus `lastVisitAt:desc` and `lastVisitAt:asc`.
 
-The UI omits defaults from URLs, resets `page` to 1 when another control changes, debounces search 300-400 ms, applies discrete filters immediately, and preserves state through refresh/back/forward.
+Directory views omit defaults from URLs, reset `page` to 1 when another control changes, debounce search 300-400 ms, apply discrete filters immediately, and preserve state through refresh/back/forward.
+
+### Dashboard
+
+- `from`: inclusive local calendar date (`YYYY-MM-DD`).
+- `to`: exclusive local calendar date, after `from` and at most 366 calendar days later.
+- `timezone`: named IANA time zone, default `Asia/Dhaka`. Each local boundary is converted independently by the backend, including daylight-saving changes.
+- Without explicit dates, the client selects the last 30 local calendar days including today. It writes all three normalized values into the URL so a shared link does not shift with the current date. Range edits fetch only after Apply; shortcuts apply immediately. Invalid URL values remain editable and disable requests.
+
+The summary's `totals.doctors`, `totals.patients`, `totals.averagePatientsPerDoctor`, and top-ten `patientsByDoctor` ranking are all-time current-record values. `totals.patientsCreatedInRange` and zero-filled `patientsByDate` use the selected range. The client verifies every daily date, the period total, and the returned range before rendering. Ranking order is count descending, then stored doctor name and ID ascending. Counts are live reads, not a cross-query transaction snapshot; do not infer a previous period or percentage change.
 
 ## Query-key policy
 
 Query keys contain normalized values only:
 
 ```ts
-["session"][("doctors", "list", normalizedDoctorQuery)][("doctors", "detail", doctorId)][
-  ("doctors", doctorId, "patients", normalizedPatientQuery)
-][("patients", "list", normalizedPatientQuery)][("patients", "detail", patientId)][
-  ("dashboard", "summary", { from, to, timezone })
-];
+["session"];
+["doctors", "list", normalizedDoctorQuery];
+["doctors", "detail", doctorId];
+["doctors", doctorId, "patients", normalizedPatientQuery];
+["patients", "list", normalizedPatientQuery];
+["patients", "detail", patientId];
+["dashboard", "summary", { from, to, timezone }];
 ```
 
 Mutation invalidation:

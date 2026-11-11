@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { e2eOrigin } from "./helpers/environment";
 
 test("renders the administrator sign-in page", async ({ page }) => {
   await page.goto("/login");
@@ -9,7 +10,7 @@ test("renders the administrator sign-in page", async ({ page }) => {
 
 test("does not submit credentials when JavaScript is unavailable", async ({ browser }) => {
   const context = await browser.newContext({
-    baseURL: "http://localhost:3000",
+    baseURL: e2eOrigin,
     javaScriptEnabled: false,
   });
   try {

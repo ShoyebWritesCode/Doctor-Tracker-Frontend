@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { e2eOrigin } from "./helpers/environment";
 
 const email = process.env.AUTH_E2E_EMAIL;
 const password = process.env.AUTH_E2E_PASSWORD;
@@ -14,7 +15,9 @@ test.describe("real backend authentication", () => {
     await page.getByLabel("Email address").fill(email!);
     await page.getByLabel("Password", { exact: true }).fill(password!);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
-    await expect(page).toHaveURL(expectedDestination);
+    if (expectedDestination === "/dashboard")
+      await expect(page).toHaveURL((url) => url.pathname === "/dashboard");
+    else await expect(page).toHaveURL(expectedDestination);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   }
 
@@ -42,7 +45,7 @@ test.describe("real backend authentication", () => {
       .filter({ visible: true })
       .click();
     await expect(page.getByRole("heading", { name: "Doctors", exact: true })).toBeVisible();
-    const cookie = (await context.cookies("http://localhost:3000/api/v1/auth/me")).find(
+    const cookie = (await context.cookies(`${e2eOrigin}/api/v1/auth/me`)).find(
       (item) => item.name === "doctor_tracker_session",
     );
     expect(cookie).toMatchObject({ httpOnly: true, path: "/api/v1", sameSite: "Lax" });
@@ -99,23 +102,24 @@ test.describe("real backend authentication", () => {
     context,
   }) => {
     await signIn(page, "//evil.example", "/dashboard");
-    const cookie = (await context.cookies("http://localhost:3000/api/v1/auth/me")).find(
+    const cookie = (await context.cookies(`${e2eOrigin}/api/v1/auth/me`)).find(
       (item) => item.name === "doctor_tracker_session",
     );
     expect(cookie).toBeDefined();
     const isolatedClient = await playwright.request.newContext({
-      baseURL: "http://localhost:3000",
+      baseURL: e2eOrigin,
     });
     try {
       const revoked = await isolatedClient.post("/api/v1/auth/logout", {
-        headers: { Cookie: `${cookie!.name}=${cookie!.value}`, Origin: "http://localhost:3000" },
+        headers: { Cookie: `${cookie!.name}=${cookie!.value}`, Origin: e2eOrigin },
       });
       expect(revoked.status()).toBe(204);
     } finally {
       await isolatedClient.dispose();
     }
+    const destination = new URL(page.url()).pathname + new URL(page.url()).search;
     await page.reload();
-    await expect(page).toHaveURL("/login?next=%2Fdashboard");
+    await expect(page).toHaveURL(`/login?next=${encodeURIComponent(destination)}`);
     await expect(page.getByRole("heading", { name: "Dashboard", exact: true })).toBeHidden();
   });
 

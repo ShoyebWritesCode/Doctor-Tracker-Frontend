@@ -45,7 +45,15 @@ Open `http://localhost:3000`. Next.js proxies `/api/v1/*` requests to the config
 
 ## Current implementation status
 
-Phases 01-05 provide the project foundation, accessible design system, typed API client, administrator sign-in, authoritative session checks, responsive portal navigation, and the doctor and global patient workspaces. The dashboard remains a protected placeholder until the analytics phase.
+Phases 01-06 provide the project foundation, accessible design system, typed API client, administrator sign-in, authoritative session checks, responsive portal navigation, doctor/global patient workspaces, and dashboard analytics.
+
+## Dashboard analytics
+
+- Four metrics show current doctor/patient totals, patients created in the selected period, and the API's all-time average patients per doctor. Only the creation count and daily chart are range-dependent; the top-ten doctor ranking is all-time. Deleted records are excluded. No previous-period comparison is implied.
+- The default is the last 30 calendar days including today in `Asia/Dhaka`, with 7/30/90-day shortcuts. Custom periods accept an inclusive start, exclusive end, and named IANA time zone, up to 366 calendar days. Explicit dates and zone persist in the URL across refresh and Back/Forward. Invalid ranges preserve entries and do not fetch.
+- The daily chart has a zero baseline, pointer inspection, a keyboard-operated day selector, factual text summary, and expandable data table. Single-day and zero-count periods do not invent activity. Ranking bars show relative patient load, full counts, linked doctor names, and stable API ordering for ties.
+- Counts, complete daily labels, and range reconciliation are validated at the API boundary. Date/time zone are part of the query key; successful record mutations invalidate dashboard queries. Loading preserves chart space; failed requests offer inline retry without blocking navigation. Refresh failures explicitly label retained results as the last successful response.
+- Charts use application tokens and native SVG/HTML, without chart-library dependencies or decorative animation. All values remain available without relying on color or a mouse.
 
 ## Doctor workspace
 
@@ -70,9 +78,26 @@ Start `npm run test:auth-server` in the backend repository to use a disposable M
 ```bash
 AUTH_E2E_EMAIL=browser-test@example.test \
 AUTH_E2E_PASSWORD=fictional-browser-verification-only \
-npm run test:e2e -- --workers=2
+npm run test:e2e -- --workers=1
 ```
 
-The suite checks private cookies, login failures, safe redirects, direct navigation, refresh, session revocation, sign-out/Back navigation, and the doctor/patient workflows above. It covers duplicate doctor emails, preserved form values after server failures, retryable list/deletion failures, count refresh, final-page correction, keyboard focus, and layout at 360, 768, 1024, and 1440 px, including maximal unbroken names. Successful integration requests use the actual API and disposable database; only failure scenarios inject HTTP errors. Without the two test credential variables, backend integration cases are explicitly skipped; the login and component-gallery tests still run.
+The suite checks private cookies, login failures, safe redirects, direct navigation, refresh, session revocation, sign-out/Back navigation, and the doctor/patient workflows above. It also reconciles dashboard metrics with real API/list totals, checks mutation refresh, URL/time-zone persistence, single-day zero data, keyboard inspection, loading, and retry. It covers duplicate doctor emails, preserved form values after server failures, retryable list/deletion failures, count refresh, final-page correction, keyboard focus, and layout at 360, 768, 1024, and 1440 px, including maximal unbroken names. Successful integration requests use the actual API and disposable database; only failure scenarios inject HTTP errors. Without the two test credential variables, backend integration cases are explicitly skipped; the login and component-gallery tests still run.
+
+To keep an existing preview and its temporary records separate, start a second fixture in the backend repository:
+
+```bash
+BROWSER_TEST_API_PORT=4001 BROWSER_TEST_FRONTEND_ORIGIN=http://localhost:3001 npm run test:auth-server
+```
+
+Then run from this repository:
+
+```bash
+E2E_BASE_URL=http://localhost:3001 API_PROXY_TARGET=http://localhost:4001 \
+AUTH_E2E_EMAIL=browser-test@example.test \
+AUTH_E2E_PASSWORD=fictional-browser-verification-only \
+npm run test:e2e -- --workers=1
+```
+
+Playwright uses the configured localhost origin, launches Next.js on that port, and uses a separate ignored `.next-e2e` build directory. Run with one worker when reconciling directory-wide totals against a shared fixture; concurrent mutations can legitimately change independent live reads. The fixture is deliberately disposable and all credentials above are fictional.
 
 For everyday development, configure the backend `.env` with a persistent MongoDB URI and administrator seed credentials, run its seed command, and start the backend normally. `.env` and `.env.local` are ignored by Git.

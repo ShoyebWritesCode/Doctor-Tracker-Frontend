@@ -1,8 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
+import { e2eOrigin as origin } from "./helpers/environment";
 
 const email = process.env.AUTH_E2E_EMAIL;
 const password = process.env.AUTH_E2E_PASSWORD;
-const origin = "http://localhost:3000";
 test.describe("real backend global patient workflows", () => {
   test.skip(!email || !password, "Requires the explicitly seeded disposable backend.");
   async function signIn(page: Page) {

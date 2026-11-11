@@ -35,6 +35,8 @@
     }
   },
   "include": [
+    ".next-e2e/types/**/*.ts",
+    ".next-e2e/dev/types/**/*.ts",
     ".next/types/**/*.ts",
     "next-env.d.ts",
     "next.config.ts",
