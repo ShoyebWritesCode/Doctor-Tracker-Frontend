@@ -55,7 +55,9 @@ describe("dashboard presentation", () => {
         totalDoctors={3}
       />,
     );
-    expect(screen.getAllByLabelText("0 patients")).toHaveLength(3);
+    expect(screen.getAllByText((_, element) => element?.textContent === "0 patients")).toHaveLength(
+      3,
+    );
     expect(screen.getByText("No patients are assigned to these doctors yet.")).toBeVisible();
     rerender(
       <DoctorRanking
@@ -63,7 +65,9 @@ describe("dashboard presentation", () => {
         totalDoctors={3}
       />,
     );
-    expect(screen.getAllByLabelText("5 patients")).toHaveLength(3);
+    expect(screen.getAllByText((_, element) => element?.textContent === "5 patients")).toHaveLength(
+      3,
+    );
   });
   it("keeps invalid range edits local, focuses the problem and never applies them", async () => {
     const user = userEvent.setup();

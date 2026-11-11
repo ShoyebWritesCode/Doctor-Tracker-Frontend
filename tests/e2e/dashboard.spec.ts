@@ -85,7 +85,7 @@ test.describe("real backend dashboard analytics", () => {
       const row = ranking.getByRole("listitem").nth(index);
       await expect(row.getByRole("link")).toHaveText(doctor.doctorName);
       await expect(
-        row.getByLabel(
+        row.getByText(
           `${new Intl.NumberFormat("en-GB").format(doctor.count)} ${doctor.count === 1 ? "patient" : "patients"}`,
         ),
       ).toBeVisible();

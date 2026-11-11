@@ -106,6 +106,7 @@ function PatientRecords({
       <MobileRecordList label="Doctor patients" className="xl:hidden">
         {patients.map((patient) => (
           <MobileRecord
+            headingLevel={3}
             title={patient.name}
             key={patient.id}
             actions={<Status value={patient.status} />}
@@ -189,7 +190,7 @@ export function DoctorDetail({ doctorId }: { doctorId: string }) {
   return (
     <div className="grid min-w-0 grid-cols-1 gap-6">
       <nav aria-label="Breadcrumb" className="text-sm">
-        <Link href="/doctors" className="text-action hover:underline">
+        <Link href="/doctors" className="text-action underline underline-offset-4">
           Doctors
         </Link>
         <span aria-hidden="true" className="text-ink-subtle mx-2">
@@ -215,9 +216,9 @@ export function DoctorDetail({ doctorId }: { doctorId: string }) {
           </a>
         </RecordValue>
         <RecordValue label="Assigned patients">
-          <span aria-label="Assigned patient count" className="font-semibold">
+          <output aria-label="Assigned patient count" className="font-semibold">
             {record.patientCount}
-          </span>
+          </output>
         </RecordValue>
         <RecordValue label="Added (UTC)">{formatDate(record.createdAt)}</RecordValue>
       </dl>

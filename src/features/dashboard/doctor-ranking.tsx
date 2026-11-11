@@ -53,11 +53,9 @@ export function DoctorRanking({
               >
                 {doctor.doctorName}
               </Link>
-              <span
-                className="pt-1 text-sm font-semibold"
-                aria-label={`${formatCount(doctor.count)} ${doctor.count === 1 ? "patient" : "patients"}`}
-              >
+              <span className="pt-1 text-sm font-semibold">
                 {formatCount(doctor.count)}
+                <span className="sr-only"> {doctor.count === 1 ? "patient" : "patients"}</span>
               </span>
             </div>
             <div
