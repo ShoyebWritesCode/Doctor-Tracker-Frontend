@@ -38,6 +38,16 @@ Open `http://localhost:3000`. Next.js proxies `/api/v1/*` requests to the config
 
 `NEXT_PUBLIC_API_BASE_PATH` is the relative path used by browser requests. `API_PROXY_TARGET` is server-only and identifies the separately running Express service. Do not expose secrets through `NEXT_PUBLIC_*` values.
 
+## Vercel deployment
+
+Import this repository as a separate Next.js project. `vercel.json` uses the same webpack production build verified locally and a single Mumbai region near the API and database.
+
+Set production `API_PROXY_TARGET` to the backend's exact HTTPS origin and `NEXT_PUBLIC_API_BASE_PATH` to `/api/v1`. Only the relative API path belongs in public browser configuration. Never add the Atlas URI, database password, or administrator seed password to this project.
+
+Set the backend's `FRONTEND_ORIGIN` to the frontend's actual HTTPS production origin, with secure session cookies enabled there. Keep browser requests same-origin through the proxy. If an assigned deployment hostname changes, update the paired configuration and redeploy; do not relax origin validation to a wildcard.
+
+Production secrets are not shared with preview builds. Authenticated previews require their own backend/origin and database configuration. Verify login, refresh, sign-out, doctor/patient workflows, dashboard counts, and private/no-store responses on the production URL after both deployments are ready.
+
 ## API contract
 
 - Frontend consumption rules: [`docs/api-contract.md`](./docs/api-contract.md)
