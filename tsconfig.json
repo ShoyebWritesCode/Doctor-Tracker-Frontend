@@ -48,5 +48,5 @@
     "vitest.config.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next/dev/types/validator.ts", ".next-e2e/dev/types/validator.ts"]
 }

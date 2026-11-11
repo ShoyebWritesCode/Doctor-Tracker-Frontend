@@ -5,6 +5,7 @@ import "@/app/globals.css";
 
 export const metadata: Metadata = {
   description: "A secure administrative workspace for managing doctors and patients.",
+  robots: { index: false, follow: false },
   title: {
     default: "Doctor Tracker",
     template: "%s | Doctor Tracker",
