@@ -115,11 +115,7 @@ type Doctor = {
 type DoctorSummary = Pick<Doctor, "id" | "name">;
 
 type PatientStatus = "active" | "follow_up" | "discharged";
-type PatientGender =
-  | "female"
-  | "male"
-  | "non_binary"
-  | "prefer_not_to_say";
+type PatientGender = "female" | "male" | "non_binary" | "prefer_not_to_say";
 
 type Patient = {
   id: string;
@@ -142,22 +138,22 @@ Patient create/update forms enforce at least one contact method after the user h
 
 ## Endpoint inventory
 
-| Method | Path | Frontend use |
-| --- | --- | --- |
-| POST | `/api/v1/auth/login` | Login form |
-| POST | `/api/v1/auth/logout` | Shell sign-out |
-| GET | `/api/v1/auth/me` | Protected layout/current administrator |
-| GET | `/api/v1/doctors` | Doctor directory |
-| POST | `/api/v1/doctors` | Add doctor |
-| GET | `/api/v1/doctors/:doctorId` | Doctor detail |
-| GET | `/api/v1/doctors/:doctorId/patients` | Doctor-scoped patients |
-| POST | `/api/v1/doctors/:doctorId/patients` | Add patient under doctor |
-| DELETE | `/api/v1/doctors/:doctorId/patients/:patientId` | Scoped patient deletion |
-| GET | `/api/v1/patients` | Global patient directory |
-| GET | `/api/v1/patients/:patientId` | Hydrate patient edit view |
-| PATCH | `/api/v1/patients/:patientId` | Edit patient |
-| DELETE | `/api/v1/patients/:patientId` | Global patient deletion |
-| GET | `/api/v1/dashboard/summary` | Dashboard metrics and charts |
+| Method | Path                                            | Frontend use                           |
+| ------ | ----------------------------------------------- | -------------------------------------- |
+| POST   | `/api/v1/auth/login`                            | Login form                             |
+| POST   | `/api/v1/auth/logout`                           | Shell sign-out                         |
+| GET    | `/api/v1/auth/me`                               | Protected layout/current administrator |
+| GET    | `/api/v1/doctors`                               | Doctor directory                       |
+| POST   | `/api/v1/doctors`                               | Add doctor                             |
+| GET    | `/api/v1/doctors/:doctorId`                     | Doctor detail                          |
+| GET    | `/api/v1/doctors/:doctorId/patients`            | Doctor-scoped patients                 |
+| POST   | `/api/v1/doctors/:doctorId/patients`            | Add patient under doctor               |
+| DELETE | `/api/v1/doctors/:doctorId/patients/:patientId` | Scoped patient deletion                |
+| GET    | `/api/v1/patients`                              | Global patient directory               |
+| GET    | `/api/v1/patients/:patientId`                   | Hydrate patient edit view              |
+| PATCH  | `/api/v1/patients/:patientId`                   | Edit patient                           |
+| DELETE | `/api/v1/patients/:patientId`                   | Global patient deletion                |
+| GET    | `/api/v1/dashboard/summary`                     | Dashboard metrics and charts           |
 
 ## URL-state contract
 
@@ -188,13 +184,11 @@ The UI omits defaults from URLs, resets `page` to 1 when another control changes
 Query keys contain normalized values only:
 
 ```ts
-["session"]
-["doctors", "list", normalizedDoctorQuery]
-["doctors", "detail", doctorId]
-["doctors", doctorId, "patients", normalizedPatientQuery]
-["patients", "list", normalizedPatientQuery]
-["patients", "detail", patientId]
-["dashboard", "summary", { from, to, timezone }]
+["session"][("doctors", "list", normalizedDoctorQuery)][("doctors", "detail", doctorId)][
+  ("doctors", doctorId, "patients", normalizedPatientQuery)
+][("patients", "list", normalizedPatientQuery)][("patients", "detail", patientId)][
+  ("dashboard", "summary", { from, to, timezone })
+];
 ```
 
 Mutation invalidation:
@@ -239,15 +233,15 @@ The backend supplies zero-filled dates and at most ten ranked doctors. The front
 
 ## Error behavior
 
-| Status | Frontend behavior |
-| --- | --- |
-| 400 | Map field errors; keep user input; show safe form/page message |
-| 401 | Clear private cache and redirect to login |
-| 403 | Show access/origin failure without retry loop |
-| 404 | Show route/resource not-found state |
-| 409 | Show conflict in form context, such as duplicate doctor email |
-| 429 | Disable/retry according to `Retry-After`; explain rate limit |
-| 500/503 | Generic recovery UI with request ID and deliberate retry |
+| Status  | Frontend behavior                                              |
+| ------- | -------------------------------------------------------------- |
+| 400     | Map field errors; keep user input; show safe form/page message |
+| 401     | Clear private cache and redirect to login                      |
+| 403     | Show access/origin failure without retry loop                  |
+| 404     | Show route/resource not-found state                            |
+| 409     | Show conflict in form context, such as duplicate doctor email  |
+| 429     | Disable/retry according to `Retry-After`; explain rate limit   |
+| 500/503 | Generic recovery UI with request ID and deliberate retry       |
 
 Toasts announce completed background mutations. Validation and destructive-action errors stay in context. A request ID may be shown for support, but raw server details never are.
 
