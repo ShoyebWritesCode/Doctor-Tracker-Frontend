@@ -1,5 +1,8 @@
 "use client";
 
+import { CircleAlert } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 type ErrorPageProps = Readonly<{
   error: Error & { digest?: string };
   reset: () => void;
@@ -7,25 +10,23 @@ type ErrorPageProps = Readonly<{
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
+    <main className="mx-auto grid max-w-lg justify-items-center gap-4 px-4 py-16 text-center">
+      <span className="rounded-control bg-danger-soft text-danger grid size-12 place-items-center">
+        <CircleAlert aria-hidden="true" />
+      </span>
       <section aria-labelledby="error-title" role="alert">
-        <p className="text-sm font-semibold text-red-700">Unable to load this page</p>
-        <h1 id="error-title" className="mt-2 text-2xl font-semibold text-slate-950">
-          Something went wrong
+        <h1 id="error-title" className="text-ink text-xl font-semibold">
+          Unable to load this page
         </h1>
-        <p className="mt-3 max-w-xl text-slate-600">
+        <p className="text-ink-muted mt-2 text-sm leading-6">
           Try the request again. If the problem continues, share the reference below with support.
         </p>
         {error.digest ? (
-          <p className="mt-3 font-mono text-xs text-slate-500">Reference: {error.digest}</p>
+          <p className="text-ink-subtle mt-3 font-mono text-xs">Reference: {error.digest}</p>
         ) : null}
-        <button
-          className="mt-6 min-h-11 rounded-md bg-teal-700 px-4 py-2 font-semibold text-white hover:bg-teal-800"
-          onClick={reset}
-          type="button"
-        >
+        <Button className="mt-6" onClick={reset} variant="outline">
           Try again
-        </button>
+        </Button>
       </section>
     </main>
   );

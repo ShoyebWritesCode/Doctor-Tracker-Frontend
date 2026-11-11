@@ -18,6 +18,13 @@ function apiProxyTarget(): string {
 }
 
 const nextConfig: NextConfig = {
+  agentRules: false,
+  allowedDevOrigins: ["127.0.0.1"],
+  experimental: {
+    // The compiler API is stable in this pinned TypeScript release and avoids
+    // subprocess output issues in restricted CI/container environments.
+    useTypeScriptCli: false,
+  },
   poweredByHeader: false,
   reactStrictMode: true,
   async rewrites() {
