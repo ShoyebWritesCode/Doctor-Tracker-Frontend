@@ -9,7 +9,7 @@ export type Patient = {
   email: string | null;
   phone: string | null;
   dateOfBirth: string | null;
-  gender: string | null;
+  gender: "female" | "male" | "non_binary" | "prefer_not_to_say" | null;
   condition: string;
   status: "active" | "follow_up" | "discharged";
   lastVisitAt: string | null;
@@ -57,10 +57,70 @@ export function readPatientState(params: URLSearchParams) {
     status: patientStatuses.some((option) => option.value === status) ? status : "",
   };
 }
+export function readGlobalPatientState(params: URLSearchParams) {
+  const doctorId = params.get("doctorId") ?? "";
+  return { ...readPatientState(params), doctorId: /^[a-f0-9]{24}$/.test(doctorId) ? doctorId : "" };
+}
 export const patientKeys = {
   all: ["patients"] as const,
+  list: (query: string) => ["patients", "list", query] as const,
+  detail: (id: string) => ["patients", "detail", id] as const,
   scoped: (doctorId: string, query: string) => ["patients", "doctor", doctorId, query] as const,
 };
+export function listPatients(query: string, signal?: AbortSignal) {
+  return apiList<Patient>(`/patients${query ? `?${query}` : ""}`, signal ? { signal } : {});
+}
+export function getPatient(id: string, signal?: AbortSignal) {
+  return apiRequest<Patient>(`/patients/${encodeURIComponent(id)}`, signal ? { signal } : {});
+}
+export function updatePatient(id: string, patch: PatientPatch) {
+  return apiRequest<Patient>(`/patients/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: patch,
+  });
+}
+export function deletePatient(id: string) {
+  return apiRequest<void>(`/patients/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+const editableFields = [
+  "name",
+  "email",
+  "phone",
+  "condition",
+  "status",
+  "dateOfBirth",
+  "gender",
+  "lastVisitAt",
+  "notes",
+] as const;
+export type PatientPatch = Partial<Pick<Patient, (typeof editableFields)[number]>>;
+
+export function patientFormValues(patient: Patient): PatientInput {
+  return {
+    name: patient.name,
+    condition: patient.condition,
+    status: patient.status,
+    email: patient.email ?? undefined,
+    phone: patient.phone ?? undefined,
+    dateOfBirth: patient.dateOfBirth ?? undefined,
+    gender: patient.gender ?? undefined,
+    lastVisitAt: patient.lastVisitAt ?? undefined,
+    notes: patient.notes ?? undefined,
+  };
+}
+
+/** An explicit allowlist keeps IDs, assignment, counts and timestamps out of PATCH bodies. */
+export function buildPatientPatch(patient: Patient, input: PatientInput): PatientPatch {
+  return Object.fromEntries(
+    editableFields.flatMap((field) => {
+      let value = input[field] ?? null;
+      if (field === "email" && value) value = value.toLowerCase();
+      if (field === "lastVisitAt" && value) value = new Date(value).toISOString();
+      return value === patient[field] ? [] : [[field, value]];
+    }),
+  ) as PatientPatch;
+}
 export function listDoctorPatients(doctorId: string, query: string, signal?: AbortSignal) {
   return apiList<Patient>(
     `/doctors/${encodeURIComponent(doctorId)}/patients${query ? `?${query}` : ""}`,
