@@ -45,9 +45,16 @@ Open `http://localhost:3000`. Next.js proxies `/api/v1/*` requests to the config
 
 ## Current implementation status
 
-Phases 01-03 provide the project foundation, accessible design system, typed API client, administrator sign-in, authoritative session checks, and responsive portal navigation. Dashboard, doctor, and patient routes are protected placeholders; their product workflows follow in later phases.
+Phases 01-04 provide the project foundation, accessible design system, typed API client, administrator sign-in, authoritative session checks, responsive portal navigation, and the complete doctor workspace. The dashboard and global patient directory remain protected placeholders for the next phases.
 
-## Authentication verification
+## Doctor workspace
+
+- The directory supports server-backed search, specialization/hospital/date filters, sorting, pagination, and doctor creation. Meaningful filter state lives in the URL and survives refresh and Back/Forward; default parameters are omitted.
+- Doctor profiles show contact information and the assigned patient count, with scoped patient search, condition/status/date filters, sorting, pagination, creation, and permanent deletion.
+- Text filters are debounced by 350 ms. Date ranges use UTC, an inclusive start, and an exclusive end. Tables become purpose-built record lists on smaller screens.
+- Forms validate on blur/submit, preserve entries after failures, and display server validation errors. Deletion requires a named confirmation, stays open on failure, refreshes related queries on success, and corrects an emptied final page.
+
+## Browser integration verification
 
 The browser accesses the backend through `/api/v1`. Use `http://localhost:3000` in development so the browser's Origin matches the backend's `FRONTEND_ORIGIN`. The session cookie is `HttpOnly` and scoped to `/api/v1`; it is never stored in browser storage. The portal waits for `/auth/me` before rendering its workspace. It rechecks sessions on navigation, focus, and browser-history restoration, and clears private query data on authentication failures and successful logout.
 
@@ -59,6 +66,6 @@ AUTH_E2E_PASSWORD=fictional-browser-verification-only \
 npm run test:e2e -- --workers=2
 ```
 
-The suite checks private cookies, login failures, safe redirects, direct navigation, refresh, session revocation, sign-out/Back navigation, keyboard interaction, and layout at 360, 768, 1024, and 1440 px. Without the two test credential variables, authentication integration cases are explicitly skipped; the login and component-gallery tests still run.
+The suite checks private cookies, login failures, safe redirects, direct navigation, refresh, session revocation, sign-out/Back navigation, and the doctor/patient workflows above. It covers duplicate doctor emails, preserved form values after server failures, retryable list/deletion failures, count refresh, final-page correction, keyboard focus, and layout at 360, 768, 1024, and 1440 px, including maximal unbroken names. Successful integration requests use the actual API and disposable database; only failure scenarios inject HTTP errors. Without the two test credential variables, backend integration cases are explicitly skipped; the login and component-gallery tests still run.
 
 For everyday development, configure the backend `.env` with a persistent MongoDB URI and administrator seed credentials, run its seed command, and start the backend normally. `.env` and `.env.local` are ignored by Git.
