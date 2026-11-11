@@ -2,6 +2,8 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import { ToastProvider } from "@/components/ui/toast";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 type AppProvidersProps = Readonly<{
   children: ReactNode;
@@ -26,5 +28,11 @@ function createQueryClient(): QueryClient {
 export function AppProviders({ children }: AppProvidersProps) {
   const [queryClient] = useState(createQueryClient);
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider delayDuration={400}>
+        <ToastProvider>{children}</ToastProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
 }
