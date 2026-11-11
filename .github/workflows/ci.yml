@@ -14,14 +14,14 @@ concurrency:
 
 jobs:
   quality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22.17.1
           cache: npm
@@ -43,3 +43,62 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [desktop-chromium, mobile-chromium]
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      E2E_START_BACKEND: "1"
+      E2E_PRODUCTION: "1"
+      E2E_BASE_URL: http://localhost:3001
+      API_PROXY_TARGET: http://localhost:4001
+      E2E_BACKEND_DIR: ../backend
+    steps:
+      - name: Check out frontend
+        uses: actions/checkout@v6
+        with:
+          path: frontend
+
+      - name: Check out reviewed disposable backend fixture
+        uses: actions/checkout@v6
+        with:
+          repository: ShoyebWritesCode/Doctor-Tracker-Backend
+          ref: 9748922575b3920ffcd7494619b8ad5bbdc3bb96
+          path: backend
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.17.1
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend fixture dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Verify production workflows and accessibility
+        run: npm run test:e2e -- --project=${{ matrix.project }}
+
+      - name: Upload browser audit evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: browser-${{ matrix.project }}
+          path: frontend/test-results
+          retention-days: 7
