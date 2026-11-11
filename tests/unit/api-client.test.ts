@@ -1,10 +1,25 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ApiError, apiRequest } from "@/lib/api/client";
+import { ApiError, apiRequest, apiList } from "@/lib/api/client";
 import { sessionExpiredEvent } from "@/features/auth/session-events";
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("apiRequest", () => {
+  it("preserves server pagination metadata and rejects malformed list envelopes", async () => {
+    const page = {
+      data: [{ id: "doctor-1" }],
+      meta: { page: 2, limit: 20, total: 21, totalPages: 2 },
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(new Response(JSON.stringify(page)))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ data: [] }))),
+    );
+    await expect(apiList("/doctors?page=2")).resolves.toEqual(page);
+    await expect(apiList("/doctors")).rejects.toMatchObject({ code: "UNEXPECTED_RESPONSE" });
+  });
   it("sends JSON with credentials, request headers, and the abort signal", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ data: { id: "admin-1" } }), {

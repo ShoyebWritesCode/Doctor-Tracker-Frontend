@@ -8,17 +8,22 @@ export function getPaginationItems(page: number, totalPages: number): Pagination
     return Array.from({ length: Math.max(totalPages, 0) }, (_, index) => index + 1);
   const items: PaginationItem[] = [1];
   if (page > 4) items.push("ellipsis-start");
-  const start = Math.max(2, Math.min(page - 1, totalPages - 4));
-  const end = Math.min(totalPages - 1, Math.max(page + 1, 5));
+  const start = page <= 4 ? 2 : Math.min(page - 1, totalPages - 4);
+  const end = page >= totalPages - 3 ? totalPages - 1 : Math.max(page + 1, 5);
   for (let value = start; value <= end; value += 1) items.push(value);
   if (page < totalPages - 3) items.push("ellipsis-end");
   items.push(totalPages);
   return items;
 }
 
-type PaginationProps = { onPageChange: (page: number) => void; page: number; totalPages: number };
+type PaginationProps = {
+  onPageChange: (page: number) => void;
+  page: number;
+  totalPages: number;
+  busy?: boolean;
+};
 
-export function Pagination({ onPageChange, page, totalPages }: PaginationProps) {
+export function Pagination({ onPageChange, page, totalPages, busy = false }: PaginationProps) {
   if (totalPages <= 1) return null;
   return (
     <nav aria-label="Pagination" className="flex flex-wrap items-center justify-between gap-3">
@@ -28,7 +33,7 @@ export function Pagination({ onPageChange, page, totalPages }: PaginationProps) 
       <div className="flex items-center gap-1">
         <Button
           aria-label="Previous page"
-          disabled={page === 1}
+          disabled={busy || page <= 1}
           onClick={() => onPageChange(page - 1)}
           size="icon"
           variant="ghost"
@@ -40,6 +45,7 @@ export function Pagination({ onPageChange, page, totalPages }: PaginationProps) 
             typeof item === "number" ? (
               <Button
                 aria-current={item === page ? "page" : undefined}
+                disabled={busy}
                 aria-label={`Page ${item}`}
                 key={item}
                 onClick={() => onPageChange(item)}
@@ -57,7 +63,7 @@ export function Pagination({ onPageChange, page, totalPages }: PaginationProps) 
         </div>
         <Button
           aria-label="Next page"
-          disabled={page === totalPages}
+          disabled={busy || page >= totalPages}
           onClick={() => onPageChange(page + 1)}
           size="icon"
           variant="ghost"

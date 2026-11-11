@@ -12,5 +12,7 @@ describe("getPaginationItems", () => {
 
   it("does not add a leading ellipsis near the beginning", () => {
     expect(getPaginationItems(2, 18)).toEqual([1, 2, 3, 4, 5, "ellipsis-end", 18]);
+    expect(getPaginationItems(4, 18)).toEqual([1, 2, 3, 4, 5, "ellipsis-end", 18]);
+    expect(getPaginationItems(15, 18)).toEqual([1, "ellipsis-start", 14, 15, 16, 17, 18]);
   });
 });

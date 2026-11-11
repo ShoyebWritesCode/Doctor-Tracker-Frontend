@@ -23,13 +23,17 @@ export function PageHeader({
     >
       <div className="min-w-0">
         {eyebrow ? (
-          <p className="text-action mb-1 text-xs font-semibold tracking-wide uppercase">
+          <p className="text-action mb-1 text-xs font-semibold tracking-wide [overflow-wrap:anywhere] uppercase">
             {eyebrow}
           </p>
         ) : null}
-        <h1 className="text-ink text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h1>
+        <h1 className="text-ink text-2xl font-semibold tracking-tight [overflow-wrap:anywhere] break-words sm:text-3xl">
+          {title}
+        </h1>
         {description ? (
-          <p className="text-ink-muted mt-2 max-w-2xl text-sm leading-6">{description}</p>
+          <p className="text-ink-muted mt-2 max-w-2xl text-sm leading-6 [overflow-wrap:anywhere]">
+            {description}
+          </p>
         ) : null}
       </div>
       {actions ? <div className="flex shrink-0 flex-wrap gap-2">{actions}</div> : null}

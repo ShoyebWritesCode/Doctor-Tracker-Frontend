@@ -33,12 +33,14 @@ export function MobileRecord({
   title: string;
 }) {
   return (
-    <li className="grid gap-3 p-4">
+    <li className="grid min-w-0 grid-cols-1 gap-3 p-4">
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-ink min-w-0 font-semibold break-words">{title}</h3>
+        <h3 className="text-ink min-w-0 font-semibold [overflow-wrap:anywhere]">{title}</h3>
         {actions}
       </div>
-      <dl className="grid grid-cols-[minmax(5rem,auto)_1fr] gap-x-4 gap-y-2 text-sm">{children}</dl>
+      <dl className="grid grid-cols-[minmax(5rem,auto)_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+        {children}
+      </dl>
     </li>
   );
 }
@@ -47,7 +49,7 @@ export function MobileRecordField({ children, label }: { children: ReactNode; la
   return (
     <>
       <dt className="text-ink-muted">{label}</dt>
-      <dd className="text-ink min-w-0 break-words">{children}</dd>
+      <dd className="text-ink min-w-0 [overflow-wrap:anywhere]">{children}</dd>
     </>
   );
 }

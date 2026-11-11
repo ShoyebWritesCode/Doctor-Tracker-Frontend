@@ -20,7 +20,7 @@ export function TableShell({
       <div className="overflow-x-auto">
         <table
           aria-label={label}
-          className="w-full min-w-[42rem] border-collapse text-left text-sm"
+          className="w-full min-w-[42rem] border-collapse text-left text-sm [&_tbody_tr:last-child_td]:border-b-0"
         >
           {children}
         </table>
@@ -31,5 +31,4 @@ export function TableShell({
 
 export const tableHeaderClassName =
   "border-b border-border bg-surface-subtle px-4 py-3 text-xs font-semibold tracking-wide text-ink-muted uppercase";
-export const tableCellClassName =
-  "border-b border-border px-4 py-3 align-middle text-ink last:border-b-0";
+export const tableCellClassName = "border-b border-border px-4 py-3 align-middle text-ink";

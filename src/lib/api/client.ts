@@ -28,6 +28,15 @@ export class ApiError extends Error {
 
 type ApiRequestOptions = Omit<RequestInit, "body"> & { body?: unknown };
 
+const paginationSchema = z.object({
+  page: z.number().int().positive(),
+  limit: z.number().int().positive().max(100),
+  total: z.number().int().nonnegative(),
+  totalPages: z.number().int().nonnegative(),
+});
+export type PaginationMeta = z.infer<typeof paginationSchema>;
+export type PageResult<T> = { data: T[]; meta: PaginationMeta };
+
 const errorEnvelope = z.object({
   error: z.object({
     code: z.string(),
@@ -49,7 +58,10 @@ function fallbackError(status: number, requestId?: string) {
   });
 }
 
-export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+async function requestEnvelope(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<{ data: unknown; meta?: unknown }> {
   const { body, ...requestOptions } = options;
   const headers = new Headers(requestOptions.headers);
   headers.set("Accept", "application/json");
@@ -74,7 +86,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   }
   const requestId = response.headers.get("X-Request-Id") ?? undefined;
   if (response.status === 401 && path !== "/auth/login") notifySessionExpired();
-  if (response.ok && response.status === 204) return undefined as T;
+  if (response.ok && response.status === 204) return { data: undefined };
 
   let payload: unknown;
   try {
@@ -100,5 +112,19 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   }
   if (typeof payload !== "object" || payload === null || !("data" in payload))
     throw fallbackError(response.status, requestId);
-  return payload.data as T;
+  return { data: payload.data, ...("meta" in payload ? { meta: payload.meta } : {}) };
+}
+
+export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  return (await requestEnvelope(path, options)).data as T;
+}
+
+export async function apiList<T>(
+  path: string,
+  options: ApiRequestOptions = {},
+): Promise<PageResult<T>> {
+  const result = await requestEnvelope(path, options);
+  const meta = paginationSchema.safeParse(result.meta);
+  if (!Array.isArray(result.data) || !meta.success) throw fallbackError(200);
+  return { data: result.data as T[], meta: meta.data };
 }
