@@ -30,7 +30,7 @@ export const TextareaField = forwardRef<HTMLTextAreaElement, TextareaFieldProps>
       [ariaDescribedBy, descriptionId, errorId].filter(Boolean).join(" ") || undefined;
 
     return (
-      <div className="grid gap-2">
+      <div className="grid min-w-0 grid-cols-1 gap-2">
         <label className="text-ink text-sm font-semibold" htmlFor={inputId}>
           {label}
           {required ? (
@@ -43,7 +43,7 @@ export const TextareaField = forwardRef<HTMLTextAreaElement, TextareaFieldProps>
           aria-describedby={describedBy}
           aria-invalid={error ? true : undefined}
           className={cn(
-            "rounded-control border-border bg-surface-raised text-ink placeholder:text-ink-subtle hover:border-border-strong disabled:bg-surface-subtle w-full resize-y border px-3 py-2 text-base leading-6 shadow-sm transition-colors disabled:cursor-not-allowed md:text-sm",
+            "rounded-control border-border bg-surface-raised text-ink placeholder:text-ink-subtle hover:border-border-strong disabled:bg-surface-subtle w-full max-w-full min-w-0 resize-y border px-3 py-2 text-base leading-6 shadow-sm transition-colors disabled:cursor-not-allowed md:text-sm",
             error && "border-danger",
             className,
           )}

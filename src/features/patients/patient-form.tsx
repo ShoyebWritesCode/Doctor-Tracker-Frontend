@@ -22,19 +22,27 @@ export function PatientForm({
   onCancel,
   pending,
   error,
+  initialValues,
+  submitLabel = "Create patient",
 }: {
   onSubmit: (input: PatientInput) => void;
   onCancel: () => void;
   pending: boolean;
   error: unknown;
+  initialValues?: PatientInput;
+  submitLabel?: string;
 }) {
   const [localErrors, setErrors] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState("active");
-  const [gender, setGender] = useState("none");
+  const [status, setStatus] = useState(initialValues?.status ?? "active");
+  const [gender, setGender] = useState(initialValues?.gender ?? "none");
   const errors = { ...localErrors, ...serverFields(error) };
   const fieldProps = (field: string) => ({
     id: `patient-${field}`,
     name: field,
+    defaultValue:
+      field === "lastVisitAt" && initialValues?.lastVisitAt
+        ? new Date(initialValues.lastVisitAt).toISOString().slice(0, -1)
+        : (initialValues?.[field as keyof PatientInput] ?? ""),
     ...(errors[field] ? { error: errors[field] } : {}),
     onBlur: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const key = field as keyof typeof patientFormSchema.shape;
@@ -64,7 +72,7 @@ export function PatientForm({
     onSubmit(parsed.data);
   }
   return (
-    <form className="grid gap-4" method="post" noValidate onSubmit={submit}>
+    <form className="grid min-w-0 grid-cols-1 gap-4" method="post" noValidate onSubmit={submit}>
       <FormErrorSummary
         errors={Object.entries(errors)
           .filter(([, message]) => message)
@@ -72,7 +80,7 @@ export function PatientForm({
       />
       {error ? (
         <InlineError>
-          We could not add this patient. Your entries are preserved; review the fields or try again.
+          {`We could not ${initialValues ? "save" : "add"} this patient. Your entries are preserved; review the fields or try again.`}
         </InlineError>
       ) : null}
       <TextField {...fieldProps("name")} label="Patient name" maxLength={120} required />
@@ -93,7 +101,7 @@ export function PatientForm({
           id="patient-status"
           required
           value={status}
-          onValueChange={setStatus}
+          onValueChange={(value) => setStatus(value as PatientInput["status"])}
           options={patientStatuses}
         />
       </div>
@@ -126,6 +134,7 @@ export function PatientForm({
             {...fieldProps("lastVisitAt")}
             label="Last visit (UTC, optional)"
             type="datetime-local"
+            step="0.001"
           />
           <TextareaField
             {...fieldProps("notes")}
@@ -140,7 +149,7 @@ export function PatientForm({
           Cancel
         </Button>
         <Button type="submit" loading={pending}>
-          Create patient
+          {submitLabel}
         </Button>
       </DialogFooter>
     </form>

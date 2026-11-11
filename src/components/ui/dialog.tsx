@@ -18,7 +18,7 @@ export const DialogContent = forwardRef<
       <DialogPrimitive.Overlay className="bg-ink/45 fixed inset-0 z-40 backdrop-blur-[1px] data-[state=closed]:opacity-0" />
       <DialogPrimitive.Content
         className={cn(
-          "rounded-panel border-border bg-surface-raised shadow-panel fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-5 overflow-y-auto border p-5 outline-none sm:p-6",
+          "rounded-panel border-border bg-surface-raised shadow-panel fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 grid-cols-1 gap-5 overflow-y-auto border p-5 outline-none sm:p-6",
           className,
         )}
         ref={ref}
@@ -39,7 +39,7 @@ export const DialogContent = forwardRef<
 });
 
 export function DialogHeader({ children, className }: { children: ReactNode; className?: string }) {
-  return <div className={cn("grid gap-2 pr-10", className)}>{children}</div>;
+  return <div className={cn("grid min-w-0 gap-2 pr-10", className)}>{children}</div>;
 }
 
 export function DialogFooter({ children, className }: { children: ReactNode; className?: string }) {
@@ -58,7 +58,7 @@ export function DialogFooter({ children, className }: { children: ReactNode; cla
 export function DialogTitle(props: ComponentPropsWithoutRef<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn("text-ink text-lg font-semibold", props.className)}
+      className={cn("text-ink text-lg font-semibold [overflow-wrap:anywhere]", props.className)}
       {...props}
     />
   );
@@ -69,7 +69,7 @@ export function DialogDescription(
 ) {
   return (
     <DialogPrimitive.Description
-      className={cn("text-ink-muted text-sm leading-6", props.className)}
+      className={cn("text-ink-muted text-sm leading-6 [overflow-wrap:anywhere]", props.className)}
       {...props}
     />
   );

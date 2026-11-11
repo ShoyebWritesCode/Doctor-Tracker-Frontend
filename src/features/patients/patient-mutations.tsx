@@ -19,13 +19,15 @@ import { PatientForm } from "@/features/patients/patient-form";
 import {
   createDoctorPatient,
   deleteDoctorPatient,
+  deletePatient,
   patientKeys,
   type Patient,
   type PatientInput,
 } from "@/features/patients/api";
 import { doctorKeys } from "@/features/doctors/api";
+import { ApiError } from "@/lib/api/client";
 
-async function refreshRecords(client: QueryClient) {
+export async function refreshRecords(client: QueryClient) {
   await Promise.all([
     client.invalidateQueries({ queryKey: patientKeys.all }),
     client.invalidateQueries({ queryKey: doctorKeys.all }),
@@ -91,13 +93,51 @@ export function DeletePatient({
   onDeleted: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  return (
+    <PatientDeleteDialog
+      patient={patient}
+      doctorId={doctorId}
+      open={open}
+      onOpenChange={setOpen}
+      onDeleted={onDeleted}
+      trigger={
+        <Button
+          variant="ghost"
+          className="text-danger"
+          aria-label={`Delete patient ${patient.name}`}
+        >
+          Delete patient
+        </Button>
+      }
+    />
+  );
+}
+
+export function PatientDeleteDialog({
+  patient,
+  doctorId,
+  open,
+  onOpenChange,
+  onDeleted,
+  trigger,
+  restoreFocus,
+}: {
+  patient: Patient;
+  doctorId?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDeleted: () => void;
+  trigger?: React.ReactNode;
+  restoreFocus?: () => void;
+}) {
   const client = useQueryClient();
   const notify = useToast();
   const mutation = useMutation({
-    mutationFn: () => deleteDoctorPatient(doctorId, patient.id),
+    mutationFn: () =>
+      doctorId ? deleteDoctorPatient(doctorId, patient.id) : deletePatient(patient.id),
     onSuccess: async () => {
       await refreshRecords(client);
-      setOpen(false);
+      onOpenChange(false);
       notify({
         title: "Patient deleted",
         description: `${patient.name}'s record was permanently deleted.`,
@@ -107,26 +147,30 @@ export function DeletePatient({
       onDeleted();
     },
   });
+  const missing = mutation.error instanceof ApiError && mutation.error.status === 404;
   return (
     <Dialog
       open={open}
       onOpenChange={(next) => {
         if (!mutation.isPending) {
-          setOpen(next);
+          if (!next && missing) void refreshRecords(client);
+          onOpenChange(next);
           if (next) mutation.reset();
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          className="text-danger"
-          aria-label={`Delete patient ${patient.name}`}
-        >
-          Delete patient
-        </Button>
-      </DialogTrigger>
-      <DialogContent showClose={!mutation.isPending}>
+      {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
+      <DialogContent
+        showClose={!mutation.isPending}
+        onCloseAutoFocus={
+          restoreFocus
+            ? (event) => {
+                event.preventDefault();
+                restoreFocus();
+              }
+            : undefined
+        }
+      >
         <DialogHeader>
           <DialogTitle>Delete {patient.name}?</DialogTitle>
           <DialogDescription>
@@ -135,17 +179,23 @@ export function DeletePatient({
           </DialogDescription>
         </DialogHeader>
         {mutation.isError ? (
-          <InlineError>Deletion failed. The record has not been removed. Try again.</InlineError>
+          <InlineError>
+            {missing
+              ? "This patient is no longer available. Close to refresh the directory."
+              : "Deletion failed. Try again, or close and refresh the directory."}
+          </InlineError>
         ) : null}
         <DialogFooter>
           <DialogClose asChild>
             <Button variant="outline" disabled={mutation.isPending}>
-              Cancel
+              {missing ? "Close" : "Cancel"}
             </Button>
           </DialogClose>
-          <Button variant="danger" loading={mutation.isPending} onClick={() => mutation.mutate()}>
-            Delete permanently
-          </Button>
+          {!missing ? (
+            <Button variant="danger" loading={mutation.isPending} onClick={() => mutation.mutate()}>
+              Delete permanently
+            </Button>
+          ) : null}
         </DialogFooter>
       </DialogContent>
     </Dialog>

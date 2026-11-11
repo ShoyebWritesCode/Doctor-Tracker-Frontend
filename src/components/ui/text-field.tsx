@@ -28,7 +28,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
     [ariaDescribedBy, descriptionId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className="grid gap-2">
+    <div className="grid min-w-0 grid-cols-1 gap-2">
       <label className="text-ink text-sm font-semibold" htmlFor={inputId}>
         {label}
         {required ? (
@@ -41,7 +41,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
         aria-describedby={describedBy}
         aria-invalid={error ? true : undefined}
         className={cn(
-          "rounded-control border-border bg-surface-raised text-ink placeholder:text-ink-subtle hover:border-border-strong disabled:bg-surface-subtle disabled:text-ink-muted min-h-11 w-full border px-3 py-2 text-base shadow-sm transition-colors disabled:cursor-not-allowed md:text-sm",
+          "rounded-control border-border bg-surface-raised text-ink placeholder:text-ink-subtle hover:border-border-strong disabled:bg-surface-subtle disabled:text-ink-muted min-h-11 w-full max-w-full min-w-0 border px-3 py-2 text-base shadow-sm transition-colors disabled:cursor-not-allowed md:text-sm",
           error && "border-danger",
           className,
         )}
