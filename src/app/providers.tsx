@@ -13,6 +13,9 @@ function createQueryClient(): QueryClient {
   return new QueryClient({
     defaultOptions: {
       mutations: {
+        // Do not queue administrator writes while offline. Surface the network
+        // error immediately and let the user explicitly retry preserved values.
+        networkMode: "always",
         retry: 0,
       },
       queries: {
