@@ -45,7 +45,7 @@ Open `http://localhost:3000`. Next.js proxies `/api/v1/*` requests to the config
 
 ## Current implementation status
 
-Phases 01-04 provide the project foundation, accessible design system, typed API client, administrator sign-in, authoritative session checks, responsive portal navigation, and the complete doctor workspace. The dashboard and global patient directory remain protected placeholders for the next phases.
+Phases 01-05 provide the project foundation, accessible design system, typed API client, administrator sign-in, authoritative session checks, responsive portal navigation, and the doctor and global patient workspaces. The dashboard remains a protected placeholder until the analytics phase.
 
 ## Doctor workspace
 
@@ -54,9 +54,16 @@ Phases 01-04 provide the project foundation, accessible design system, typed API
 - Text filters are debounced by 350 ms. Date ranges use UTC, an inclusive start, and an exclusive end. Tables become purpose-built record lists on smaller screens.
 - Forms validate on blur/submit, preserve entries after failures, and display server validation errors. Deletion requires a named confirmation, stays open on failure, refreshes related queries on success, and corrects an emptied final page.
 
+## Global patient workspace
+
+- Search across all patients and combine doctor, condition, status, and created-date filters with server-backed sorting, totals, and pagination. Filter state survives refresh and browser history.
+- The doctor filter searches and paginates the actual doctor directory; it does not silently limit choices to the first page of doctors.
+- Desktop tables and mobile record lists expose keyboard-accessible edit/delete menus. Editing fetches the current record before showing the shared patient form, preserves UTC timestamp precision, and sends only changed editable fields. Clearing an optional value sends `null`; doctor assignment and server-managed fields are never patched.
+- Missing records have a clear exit that refreshes the directory. Failed saves preserve entries; failed deletions remain open for recovery. Successful mutations invalidate global/scoped patient lists, doctor counts, and dashboard queries, correct impossible pages, and restore keyboard focus.
+
 ## Browser integration verification
 
-The browser accesses the backend through `/api/v1`. Use `http://localhost:3000` in development so the browser's Origin matches the backend's `FRONTEND_ORIGIN`. The session cookie is `HttpOnly` and scoped to `/api/v1`; it is never stored in browser storage. The portal waits for `/auth/me` before rendering its workspace. It rechecks sessions on navigation, focus, and browser-history restoration, and clears private query data on authentication failures and successful logout.
+The browser accesses the backend through `/api/v1`. Use `http://localhost:3000` in development so the browser's Origin matches the backend's `FRONTEND_ORIGIN`. The session cookie is `HttpOnly` and scoped to `/api/v1`; it is never stored in browser storage. The portal waits for `/auth/me` before rendering its workspace. It rechecks sessions on navigation, focus, and browser-history restoration, and clears private query data on authentication failures and successful logout. Signing out pauses session checks; success reloads the sign-in page to discard private component state and pending navigation, while a failed request restores the workspace for retry.
 
 Start `npm run test:auth-server` in the backend repository to use a disposable MongoDB replica set and the actual authentication routes. This verification path does not need Atlas or a local `.env`. With the backend fixture running, execute:
 

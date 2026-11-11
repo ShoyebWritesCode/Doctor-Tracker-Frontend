@@ -8,7 +8,11 @@ import { PortalShell } from "@/components/layout/portal-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 import { authKeys, getCurrentAdmin } from "@/features/auth/api";
 import { ApiError } from "@/lib/api/client";
-import { sessionExpiredEvent } from "@/features/auth/session-events";
+import {
+  sessionExpiredEvent,
+  signOutStartedEvent,
+  signOutCancelledEvent,
+} from "@/features/auth/session-events";
 
 export function SessionBoundary({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -16,9 +20,11 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const [expired, setExpired] = useState(false);
   const [restoring, setRestoring] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const query = useQuery({
     queryFn: ({ signal }) => getCurrentAdmin(signal),
     queryKey: authKeys.current,
+    enabled: !signingOut,
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: true,
@@ -30,6 +36,8 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
   useEffect(() => {
     const expire = () => setExpired(true);
     const hide = () => setRestoring(true);
+    const startSignOut = () => setSigningOut(true);
+    const cancelSignOut = () => setSigningOut(false);
     const restore = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
       setRestoring(true);
@@ -40,10 +48,14 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
     window.addEventListener(sessionExpiredEvent, expire);
     window.addEventListener("pagehide", hide);
     window.addEventListener("pageshow", restore);
+    window.addEventListener(signOutStartedEvent, startSignOut);
+    window.addEventListener(signOutCancelledEvent, cancelSignOut);
     return () => {
       window.removeEventListener(sessionExpiredEvent, expire);
       window.removeEventListener("pagehide", hide);
       window.removeEventListener("pageshow", restore);
+      window.removeEventListener(signOutStartedEvent, startSignOut);
+      window.removeEventListener(signOutCancelledEvent, cancelSignOut);
     };
   }, [queryClient]);
 
@@ -52,15 +64,20 @@ export function SessionBoundary({ children }: { children: ReactNode }) {
   }, [pathname, queryClient]);
 
   useEffect(() => {
-    if (!unauthorized && !expired) return;
+    if (signingOut || (!unauthorized && !expired)) return;
     const destination = `${window.location.pathname}${window.location.search}`;
+    let active = true;
     void queryClient.cancelQueries().then(() => {
+      if (!active) return;
       queryClient.clear();
       router.replace(`/login?next=${encodeURIComponent(destination)}`);
     });
-  }, [expired, pathname, queryClient, router, unauthorized]);
+    return () => {
+      active = false;
+    };
+  }, [expired, pathname, queryClient, router, unauthorized, signingOut]);
 
-  if (query.isPending || unauthorized || expired || restoring)
+  if (query.isPending || unauthorized || expired || restoring || signingOut)
     return (
       <main aria-busy="true" className="mx-auto grid max-w-5xl gap-4 px-4 py-12">
         <Skeleton className="h-8 w-56" />

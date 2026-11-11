@@ -2,33 +2,38 @@
 
 import { LogOut } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/features/auth/api";
 import { ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/toast";
+import { notifySignOutStarted, notifySignOutCancelled } from "@/features/auth/session-events";
+import { reloadAfterSignOut } from "@/features/auth/logout-navigation";
 
 export function SignOutButton({ compact = false }: { compact?: boolean }) {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const notify = useToast();
   async function finishSignOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
-    router.replace("/login");
-    router.refresh();
+    reloadAfterSignOut();
   }
   const mutation = useMutation({
-    mutationFn: () => logout(),
+    mutationFn: async () => {
+      // Pause the boundary before revocation so cache clearing cannot trigger a competing 401 redirect.
+      notifySignOutStarted();
+      await queryClient.cancelQueries();
+      return logout();
+    },
     onSuccess: finishSignOut,
     onError: (error) => {
       if (error instanceof ApiError && error.status === 401) {
         void finishSignOut();
         return;
       }
+      notifySignOutCancelled();
       notify({
         title: "Sign out failed",
-        description: "Your session is still active. Try again.",
+        description: "We could not confirm sign-out. Try again.",
         tone: "danger",
       });
     },

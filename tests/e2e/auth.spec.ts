@@ -71,6 +71,28 @@ test.describe("real backend authentication", () => {
     ).toBeVisible();
   });
 
+  test("recovers from failed sign-out without leaving the workspace blocked", async ({ page }) => {
+    await signIn(page);
+    await page.route("**/api/v1/auth/logout", (route) =>
+      route.fulfill({
+        status: 500,
+        json: { error: { code: "INTERNAL_ERROR", message: "Temporary failure" } },
+      }),
+    );
+    await page
+      .getByRole("button", { name: "Sign out", exact: true })
+      .filter({ visible: true })
+      .click();
+    await expect(page.getByRole("heading", { name: "Dashboard", exact: true })).toBeVisible();
+    await expect(page.getByText("Sign out failed", { exact: true })).toBeVisible();
+    await page.unroute("**/api/v1/auth/logout");
+    await page
+      .getByRole("button", { name: "Sign out", exact: true })
+      .filter({ visible: true })
+      .click();
+    await expect(page).toHaveURL("/login");
+  });
+
   test("rejects external redirects and rechecks a revoked session", async ({
     page,
     playwright,
