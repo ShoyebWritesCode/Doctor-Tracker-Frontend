@@ -24,7 +24,7 @@ test.describe("real backend authentication", () => {
       await expect(page).toHaveURL(`/login?next=${encodeURIComponent(path)}`);
       await expect(page.getByRole("heading", { name: "Administrator sign in" })).toBeVisible();
     }
-    await signIn(page, "/doctors?page=2");
+    await signIn(page, "/doctors?search=missing-doctor");
     await page.reload();
     await expect(page.getByRole("heading", { name: "Doctors", exact: true })).toBeVisible();
   });

@@ -1,11 +1,11 @@
-import { PageHeader } from "@/components/layout/page-header";
+import { Suspense } from "react";
+import { DoctorDirectory } from "@/features/doctors/doctor-directory";
+import { ListLoading } from "@/components/layout/list-feedback";
 export const metadata = { title: "Doctors" };
 export default function DoctorsPage() {
   return (
-    <PageHeader
-      description="Create clinicians and manage their patient records."
-      eyebrow="Directory"
-      title="Doctors"
-    />
+    <Suspense fallback={<ListLoading label="Loading directory" />}>
+      <DoctorDirectory />
+    </Suspense>
   );
 }
