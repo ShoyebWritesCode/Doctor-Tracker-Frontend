@@ -1,11 +1,11 @@
-import { PageHeader } from "@/components/layout/page-header";
+import { Suspense } from "react";
+import { ListLoading } from "@/components/layout/list-feedback";
+import { PatientDirectory } from "@/features/patients/patient-directory";
 export const metadata = { title: "Patients" };
 export default function PatientsPage() {
   return (
-    <PageHeader
-      description="Review and maintain patient records across the clinician directory."
-      eyebrow="Records"
-      title="Patients"
-    />
+    <Suspense fallback={<ListLoading label="Loading patients" />}>
+      <PatientDirectory />
+    </Suspense>
   );
 }
