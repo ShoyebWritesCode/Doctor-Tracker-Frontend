@@ -9,7 +9,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { FormErrorSummary } from "@/components/feedback/form-error-summary";
 import { InlineError } from "@/components/feedback/inline-error";
 import { patientFormSchema, patientStatuses, type PatientInput } from "@/features/patients/api";
-import { serverFields, validationFields } from "@/lib/form-errors";
+import { isFormDismissal, serverFields, validationFields } from "@/lib/form-errors";
 
 function formValue(field: string, value: string): string {
   if (field !== "lastVisitAt" || !value) return value;
@@ -45,6 +45,7 @@ export function PatientForm({
         : (initialValues?.[field as keyof PatientInput] ?? ""),
     ...(errors[field] ? { error: errors[field] } : {}),
     onBlur: (event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      if (isFormDismissal(event.relatedTarget)) return;
       const key = field as keyof typeof patientFormSchema.shape;
       const result = patientFormSchema.shape[key].safeParse(formValue(field, event.target.value));
       setErrors((current) => ({
@@ -145,7 +146,7 @@ export function PatientForm({
         </div>
       </details>
       <DialogFooter>
-        <Button variant="outline" disabled={pending} onClick={onCancel}>
+        <Button data-form-dismiss="" variant="outline" disabled={pending} onClick={onCancel}>
           Cancel
         </Button>
         <Button type="submit" loading={pending}>

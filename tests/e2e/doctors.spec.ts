@@ -32,6 +32,49 @@ test.describe("real backend doctor workflows", () => {
     return (await response.json()).data as { id: string; name: string; email: string };
   }
 
+  for (const kind of ["doctor", "patient"] as const) {
+    test(`dismisses the ${kind} form on the first click without blur-driven layout shifts`, async ({
+      page,
+    }) => {
+      await signIn(page);
+      if (kind === "patient") {
+        const doctor = await seedDoctor(page, token());
+        await page.goto(`/doctors/${doctor.id}`);
+      }
+      const trigger = page.getByRole("button", { name: `Add ${kind}`, exact: true });
+      const dialog = page.getByRole("dialog", { name: `Add a ${kind}`, exact: true });
+      const name = dialog.getByLabel(kind === "doctor" ? "Full name" : "Patient name");
+      for (const dismissLabel of ["Close dialog", "Cancel"]) {
+        for (const value of ["", "x"]) {
+          await trigger.click();
+          await expect(name).toBeFocused();
+          if (value) await name.fill(value);
+          const dismiss = dialog.getByRole("button", { name: dismissLabel, exact: true });
+          const bounds = await dismiss.boundingBox();
+          expect(bounds).not.toBeNull();
+          // Fixed pointer coordinates catch a button moving between down and up.
+          await page.mouse.move(bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2);
+          await page.mouse.down();
+          await expect(dialog.getByRole("alert")).toHaveCount(0);
+          await page.mouse.up();
+          await expect(dialog).toBeHidden();
+          await expect(trigger).toBeFocused();
+        }
+      }
+      await trigger.click();
+      await expect(name).toBeFocused();
+      await page.keyboard.press("Tab");
+      await expect(name).toHaveAttribute("aria-invalid", "true");
+      await dialog.getByRole("button", { name: "Close dialog", exact: true }).click();
+      await expect(dialog).toBeHidden();
+      await trigger.click();
+      await expect(dialog.getByRole("alert")).toHaveCount(0);
+      await page.keyboard.press("Escape");
+      await expect(dialog).toBeHidden();
+      await expect(trigger).toBeFocused();
+    });
+  }
+
   test("keeps pagination, debounced search, filters, sort and browser history synchronized", async ({
     page,
   }) => {

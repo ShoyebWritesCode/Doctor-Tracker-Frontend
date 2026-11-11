@@ -24,7 +24,7 @@ import {
   type DoctorInput,
 } from "@/features/doctors/api";
 import { ApiError } from "@/lib/api/client";
-import { validationFields, serverFields } from "@/lib/form-errors";
+import { isFormDismissal, validationFields, serverFields } from "@/lib/form-errors";
 
 const fields = [
   {
@@ -154,6 +154,7 @@ export function DoctorForm() {
               required
               {...(errors[field.name] ? { error: errors[field.name] } : {})}
               onBlur={(event) => {
+                if (isFormDismissal(event.relatedTarget)) return;
                 const result = doctorFormSchema.shape[field.name].safeParse(event.target.value);
                 setErrors((current) => ({
                   ...current,
@@ -166,7 +167,7 @@ export function DoctorForm() {
           ))}
           <DialogFooter>
             <DialogClose asChild>
-              <Button disabled={mutation.isPending} variant="outline">
+              <Button data-form-dismiss="" disabled={mutation.isPending} variant="outline">
                 Cancel
               </Button>
             </DialogClose>

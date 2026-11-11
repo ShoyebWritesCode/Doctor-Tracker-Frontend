@@ -28,6 +28,7 @@ export const DialogContent = forwardRef<
         {showClose ? (
           <DialogPrimitive.Close
             aria-label="Close dialog"
+            data-form-dismiss=""
             className="rounded-control text-ink-muted hover:bg-surface-subtle hover:text-ink absolute top-3 right-3 inline-flex size-11 items-center justify-center"
           >
             <X aria-hidden="true" className="size-5" />
