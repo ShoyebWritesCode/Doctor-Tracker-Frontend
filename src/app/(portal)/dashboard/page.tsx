@@ -1,11 +1,11 @@
-import { PageHeader } from "@/components/layout/page-header";
+import { Suspense } from "react";
+import { ListLoading } from "@/components/layout/list-feedback";
+import { DashboardView } from "@/features/dashboard/dashboard-view";
 export const metadata = { title: "Dashboard" };
 export default function DashboardPage() {
   return (
-    <PageHeader
-      description="A concise view of doctors, patients, and recent operational activity."
-      eyebrow="Workspace"
-      title="Dashboard"
-    />
+    <Suspense fallback={<ListLoading label="Loading dashboard" />}>
+      <DashboardView />
+    </Suspense>
   );
 }
