@@ -2,6 +2,38 @@
 
 Doctor Tracker is a focused administrative workspace for managing doctors, their patients, and operational trends. This repository contains the standalone Next.js client; it communicates with the separate Express API through a same-origin `/api/v1` proxy.
 
+[Live application](https://doctor-tracker-shoyeb.vercel.app) · [Backend repository](https://github.com/ShoyebWritesCode/Doctor-Tracker-Backend) · [API health](https://doctor-tracker-api-shoyeb.vercel.app/health) · [API contract](https://doctor-tracker-api-shoyeb.vercel.app/api-docs/openapi.json)
+
+## Reviewer access
+
+There is one actor: an administrator. The deployed demo contains fictional records only. Request the demo password privately from the project owner; production credentials are deliberately not published in either repository. There is no public registration, email verification, password-reset email, or doctor/patient login. Local disposable-demo credentials are provided below and do **not** authenticate to production.
+
+A useful review route: sign in → explore the dashboard/date range → filter Doctors → open a doctor → **Add patient** → find/edit/delete that record on Patients. Patient creation belongs to a doctor profile, not the global patient directory. Destructive actions require confirmation.
+
+## System architecture
+
+```mermaid
+flowchart LR
+  Browser[Browser: Next.js UI] -->|same-origin /api/v1| Proxy[Next.js rewrite]
+  Proxy -->|REST + opaque cookie| API[Standalone Express API]
+  API -->|session hash + domain queries| DB[(MongoDB replica set)]
+  API -->|DTOs and pagination metadata| Browser
+```
+
+The projects are separate repositories and processes. Next.js does not contain Express, database credentials or a second copy of business rules. MongoDB and validation/authorization remain behind the API. `src/features` owns domain UI; `src/components` owns shared presentation and accessible primitives; `src/lib` owns transport and URL/form utilities. Charts use native SVG/HTML, not a charting-library bundle.
+
+### Decision 1: separate URL, server and interaction state
+
+Search/filter/sort/page state belongs in the URL so a refresh, copied link or Back/Forward restores the same view. Text controls debounce for 350 ms and reset pagination when a filter changes. Defaults are omitted, and query keys use normalized values rather than raw URL strings.
+
+TanStack Query owns API records, request cancellation, retained previous pages and invalidation after mutations. Component state owns unsaved form entries, open dialogs and navigation. This avoids duplicating server entities in a global store or hiding navigable filters in React state. The tradeoff is explicit invalidation across doctor counts, scoped/global patients and analytics; tests check those dependencies. Failed saves preserve entries. Offline writes fail clearly and require an explicit retry rather than silently executing on reconnect.
+
+### Decision 2: same-origin proxy with opaque sessions
+
+The browser sends relative API requests and never reads a token. The API verifies Argon2id passwords, stores only a session-token hash and sets a host-only HttpOnly cookie (Secure in production, SameSite=Lax, Path=/api/v1). Exact Origin checks protect mutations in addition to cookie policy. Logout revokes the server session before clearing local private state.
+
+This supports revocation without browser JWT storage or cross-site-cookie dependencies. Because the cookie path excludes page routes, the client session boundary waits for `/auth/me` before rendering private UI; API authentication is the security boundary, not a cosmetic route redirect. Future private Server Components would need their own authoritative session check. The sign-in form server-renders a disabled fallback when JavaScript is unavailable; portal interactions require JavaScript.
+
 ## Prerequisites
 
 - Node.js `22.17.1`
@@ -10,6 +42,15 @@ Doctor Tracker is a focused administrative workspace for managing doctors, their
 
 ## Local setup
 
+Clone both repositories as siblings, then install each with its committed lockfile:
+
+```bash
+git clone https://github.com/ShoyebWritesCode/Doctor-Tracker-Backend.git
+git clone https://github.com/ShoyebWritesCode/Doctor-Tracker-Frontend.git
+```
+
+First follow the backend README's persistent database setup, seed an administrator, and start its API on port 4000. Then, inside this repository:
+
 ```bash
 cp .env.example .env.local
 npm ci
@@ -17,6 +58,8 @@ npm run dev
 ```
 
 Open `http://localhost:3000`. Next.js proxies `/api/v1/*` requests to the configured backend target.
+
+For a **disposable local review without Atlas**, run `npm ci` in the backend, then `BROWSER_TEST_DEMO_DATA=1 npm run test:auth-server` instead of its normal server. Start this frontend as above, and sign in with `browser-test@example.test` / `fictional-browser-verification-only`. That backend creates a temporary replica set plus the fictional 24-doctor/256-patient dataset, never reads the backend `.env`, and discards edits when stopped. The first run downloads a MongoDB test binary and requires network access. Do not use these test credentials in a persistent deployment.
 
 ## Commands
 
@@ -31,12 +74,20 @@ Open `http://localhost:3000`. Next.js proxies `/api/v1/*` requests to the config
 | `npm run test:run`      | Run unit/component tests once           |
 | `npm run test:coverage` | Run tests with coverage                 |
 | `npm run test:e2e`      | Run Playwright browser tests            |
+| `npm run docs:check`    | Verify local documentation/image links  |
 | `npm run format`        | Format supported files                  |
 | `npm run format:check`  | Check formatting without changing files |
 
 ## Environment
 
 `NEXT_PUBLIC_API_BASE_PATH` is the relative path used by browser requests. `API_PROXY_TARGET` is server-only and identifies the separately running Express service. Do not expose secrets through `NEXT_PUBLIC_*` values.
+
+| Variable                    | Local example           | Meaning                                                                         |
+| --------------------------- | ----------------------- | ------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_API_BASE_PATH` | `/api/v1`               | Public, relative request prefix; not a secret.                                  |
+| `API_PROXY_TARGET`          | `http://localhost:4000` | Server-only backend origin; changing it requires restarting/rebuilding Next.js. |
+
+See [`.env.example`](.env.example). Use `localhost`, not a mixture of `localhost` and `127.0.0.1`, so the backend's exact frontend Origin matches.
 
 ## Vercel deployment
 
@@ -55,7 +106,42 @@ Production secrets are not shared with preview builds. Authenticated previews re
 
 ## Current implementation status
 
-Phases 01-06 provide the project foundation, accessible design system, typed API client, administrator sign-in, authoritative session checks, responsive portal navigation, doctor/global patient workspaces, and dashboard analytics.
+The required administrator, doctor, patient and analytics workflows are implemented. The quality gate passes 67 unit/component tests and 25 real-backend production browser cases per desktop/mobile project. Accessibility scans and local performance measurements, including their limits, are recorded in [the quality audit](docs/quality-audit.md).
+
+## Product screenshots
+
+All screenshots show the actual application with synthetic data in a disposable local environment, not mockups or real patient records. Desktop viewports are 1440×1000; mobile viewports are 390×844. Dashboard and doctor-profile captures include their full pages.
+
+![Doctor Tracker desktop dashboard with fictional metrics and patient trends](docs/screenshots/dashboard-desktop.png)
+
+<details>
+<summary>View all desktop and mobile screenshots</summary>
+
+| Workspace      | Desktop                                                                                                               | Mobile                                                                                                          |
+| -------------- | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Dashboard      | ![Desktop dashboard showing metrics, daily patient trends and doctor ranking](docs/screenshots/dashboard-desktop.png) | ![Mobile dashboard with stacked metrics and accessible trend controls](docs/screenshots/dashboard-mobile.png)   |
+| Doctors        | ![Desktop doctor directory with search, filters and records](docs/screenshots/doctors-desktop.png)                    | ![Mobile doctor directory with responsive record cards](docs/screenshots/doctors-mobile.png)                    |
+| Doctor profile | ![Desktop doctor profile and assigned patient directory](docs/screenshots/doctor-detail-desktop.png)                  | ![Mobile doctor profile with Add patient action and contact details](docs/screenshots/doctor-detail-mobile.png) |
+| Patients       | ![Desktop global patient directory with status and doctor filters](docs/screenshots/patients-desktop.png)             | ![Mobile patient directory with responsive records and action menus](docs/screenshots/patients-mobile.png)      |
+
+</details>
+
+Reproduce these eight captures with the explicit documentation fixture:
+
+```bash
+BROWSER_TEST_DEMO_DATA=1 E2E_CAPTURE_SCREENSHOTS=1 \
+E2E_START_BACKEND=1 E2E_PRODUCTION=1 \
+E2E_BASE_URL=http://localhost:3002 API_PROXY_TARGET=http://localhost:4002 \
+npm run test:e2e -- --project=desktop-chromium tests/e2e/documentation.spec.ts
+```
+
+## Boundaries and next improvements
+
+This is an administrative demonstration, not a compliant clinical records system. No real health or contact data should be entered. Doctor update/delete, changing a patient's assigned doctor, extra roles, appointments, billing, attachments, registration, email verification, password recovery and audit-history/restore workflows are outside version 1. Patient deletion is permanent.
+
+Current lists use bounded offset pagination and literal prefix search, not arbitrary substring/full-text matching. Dashboard totals are current-record reads, not historical snapshots. Deep collections would justify cursor pagination, measured search indexes, explicit caching consistency and stronger audit/backup controls. Production-sized monitoring and real-user performance percentiles are not established by local Lighthouse scores. The spoken-output screen-reader spot check remains deferred by the owner; automated scans are not a compliance certification.
+
+Assignment coverage and reviewer checks: [submission checklist](docs/submission-checklist.md).
 
 ## Dashboard analytics
 

@@ -32,6 +32,9 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+      - name: Check documentation links and screenshots
+        run: npm run docs:check
+
       - name: Lint
         run: npm run lint
 
@@ -70,7 +73,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: ShoyebWritesCode/Doctor-Tracker-Backend
-          ref: 9748922575b3920ffcd7494619b8ad5bbdc3bb96
+          ref: 86ac684d492a861efa8ffbbc907b4f3cea2f4190
           path: backend
 
       - name: Set up Node.js

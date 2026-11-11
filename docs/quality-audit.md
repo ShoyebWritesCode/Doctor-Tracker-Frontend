@@ -4,7 +4,7 @@
 
 Audit performed on 11–12 November 2026 using Node 22.17.1, npm 10.9.2, Linux x86_64, Playwright Chromium 158, and an optimized Next.js 16.4.6 webpack build. Successful requests exercised the actual Express routes and a fresh disposable MongoDB replica set. Only failure scenarios intercepted the network boundary. No deployed records or Atlas configuration were changed.
 
-The reviewed backend fixture is pinned to `9748922575b3920ffcd7494619b8ad5bbdc3bb96` in CI. Update this reference deliberately when the integration contract changes. Separate desktop/mobile jobs prevent shared writes and login budgets from contaminating each other. The fixture is integration infrastructure, not a substitute for the backend's own production-runtime/security tests.
+The reviewed backend fixture is pinned to `86ac684d492a861efa8ffbbc907b4f3cea2f4190` in CI after the documentation handoff (the original Phase 07 run used `9748922575b3920ffcd7494619b8ad5bbdc3bb96`). Update this reference deliberately when the integration contract changes. Separate desktop/mobile jobs prevent shared writes and login budgets from contaminating each other. The fixture is integration infrastructure, not a substitute for the backend's own production-runtime/security tests.
 
 ## Findings and corrections
 

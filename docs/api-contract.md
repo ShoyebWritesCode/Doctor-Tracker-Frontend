@@ -19,12 +19,12 @@ Any contract change must update the OpenAPI document first, then this document a
 - Package manager: npm `10.9.2` with a committed lockfile.
 - Framework: Next.js App Router with strict TypeScript.
 - API state: TanStack Query.
-- Form state and validation: React Hook Form plus Zod.
+- Form state and validation: native React forms with local state and Zod.
 - Filter/page/sort state: URL search parameters.
 - Transient interaction state: local component state.
 - Styling: Tailwind CSS backed by project-owned CSS design tokens.
 - Complex accessible primitives: selective Radix UI usage, restyled for this product.
-- Charts: Recharts with text/table alternatives.
+- Charts: project-owned SVG/HTML with text/table alternatives; no chart-library dependency.
 - Tests: Vitest, Testing Library, Mock Service Worker, and Playwright.
 
 Redux is not selected. Authentication and entity data are server state, list controls are URL state, and dialogs/navigation are local UI state. This decision will be revisited only if a concrete cross-route client-state requirement emerges.
