@@ -2,7 +2,7 @@
 
 import { Eye, EyeOff, LockKeyhole } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -20,10 +20,9 @@ const credentialsSchema = z.object({
     .max(128, "Password must be 128 characters or fewer."),
 });
 
-export function LoginForm() {
+export function LoginForm({ nextPath = null }: { nextPath?: string | null }) {
   const hydrated = useHydrated();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
@@ -32,7 +31,7 @@ export function LoginForm() {
     onSuccess: (admin) => {
       queryClient.clear();
       queryClient.setQueryData(authKeys.current, admin);
-      router.replace(safeNextPath(searchParams.get("next")));
+      router.replace(safeNextPath(nextPath));
       router.refresh();
     },
   });

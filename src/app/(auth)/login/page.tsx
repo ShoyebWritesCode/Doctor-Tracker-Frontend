@@ -1,9 +1,13 @@
-import { Suspense } from "react";
 import { LoginForm } from "@/features/auth/login-form";
 
 export const metadata = { title: "Sign in" };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  const { next } = await searchParams;
   return (
     <main className="grid min-h-screen place-items-center px-4 py-10">
       <section
@@ -21,9 +25,7 @@ export default function LoginPage() {
             Use your administrator credentials to access the operations workspace.
           </p>
         </div>
-        <Suspense fallback={<div className="h-72" aria-label="Loading sign-in form" />}>
-          <LoginForm />
-        </Suspense>
+        <LoginForm nextPath={typeof next === "string" ? next : null} />
       </section>
     </main>
   );
