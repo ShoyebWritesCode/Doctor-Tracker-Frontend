@@ -6,7 +6,13 @@ Doctor Tracker is a focused administrative workspace for managing doctors, their
 
 ## Reviewer access
 
-There is one actor: an administrator. The deployed demo contains fictional records only. Request the demo password privately from the project owner; production credentials are deliberately not published in either repository. There is no public registration, email verification, password-reset email, or doctor/patient login. Local disposable-demo credentials are provided below and do **not** authenticate to production.
+There is one actor: an administrator. Use the following credentials to access the deployed fictional-data demo:
+
+- Application: [Doctor Tracker](https://doctor-tracker-shoyeb.vercel.app)
+- Email: `admin@example.test`
+- Password: `CGG6NjlLjeucSEhQgw0VJxltfiyS1A_Q`
+
+These credentials are intentionally public with the owner's approval. They grant full demo-administrator access, including editing and deleting demo records. Use fictional data only and never reuse this password for a real account or real-data environment. There is no public registration, email verification, or doctor/patient login. The disposable local credentials below are separate from this deployed demo login.
 
 A useful review route: sign in → explore the dashboard/date range → filter Doctors → open a doctor → **Add patient** → find/edit/delete that record on Patients. Patient creation belongs to a doctor profile, not the global patient directory. Destructive actions require confirmation.
 
@@ -114,7 +120,7 @@ All screenshots show the actual application with synthetic data in a disposable 
 
 ![Doctor Tracker desktop dashboard with fictional metrics and patient trends](docs/screenshots/dashboard-desktop.png)
 
-<details>
+<details open>
 <summary>View all desktop and mobile screenshots</summary>
 
 | Workspace      | Desktop                                                                                                               | Mobile                                                                                                          |

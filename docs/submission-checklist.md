@@ -23,7 +23,7 @@ This is documentation/handoff for the already deployed project, not a new releas
 - Frontend: <https://github.com/ShoyebWritesCode/Doctor-Tracker-Frontend>.
 - Backend: <https://github.com/ShoyebWritesCode/Doctor-Tracker-Backend>.
 - API documentation: <https://doctor-tracker-api-shoyeb.vercel.app/api-docs/openapi.json>.
-- Share the production demo password privately with the recipient, never in Git or screenshots. This repository does not claim the submission has been sent or that reviewer credentials have already been delivered.
+- The owner explicitly approved publishing the deployed fictional-demo login in both README Access sections. It grants full demo-administrator access, including editing/deletion; never reuse it for real accounts/data. Database credentials, cookies and unrelated secrets remain private. No submission has been sent on the owner's behalf.
 - Use fictional data only. The only actor is an administrator. Email verification, public registration, extra roles and clinical compliance are not required/implemented features.
 - Spoken-output screen-reader testing remains explicitly deferred by the owner. Automated axe checks do not establish WCAG certification. The optional Docker recipe and production restore/backup procedures are not claimed as executed.
 
