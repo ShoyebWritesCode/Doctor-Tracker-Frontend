@@ -1,7 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("renders the application foundation", async ({ page }) => {
-  await page.goto("/");
-
-  await expect(page.getByRole("heading", { level: 1, name: "Doctor Tracker" })).toBeVisible();
+test("renders the administrator sign-in page", async ({ page }) => {
+  await page.goto("/login");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Administrator sign in" }),
+  ).toBeVisible();
 });

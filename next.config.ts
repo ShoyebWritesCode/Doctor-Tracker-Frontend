@@ -27,6 +27,14 @@ const nextConfig: NextConfig = {
   },
   poweredByHeader: false,
   reactStrictMode: true,
+  async headers() {
+    return [
+      {
+        source: "/:path(dashboard|doctors|patients|login)/:rest*",
+        headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }],
+      },
+    ];
+  },
   async rewrites() {
     return [
       {

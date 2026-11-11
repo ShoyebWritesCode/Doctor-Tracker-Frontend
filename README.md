@@ -45,4 +45,20 @@ Open `http://localhost:3000`. Next.js proxies `/api/v1/*` requests to the config
 
 ## Current implementation status
 
-Phase 01 establishes the frontend foundation: strict TypeScript, App Router, Tailwind, validated environment values, TanStack Query, route boundaries, tests, and CI. Authentication and product features follow in later phases.
+Phases 01-03 provide the project foundation, accessible design system, typed API client, administrator sign-in, authoritative session checks, and responsive portal navigation. Dashboard, doctor, and patient routes are protected placeholders; their product workflows follow in later phases.
+
+## Authentication verification
+
+The browser accesses the backend through `/api/v1`. Use `http://localhost:3000` in development so the browser's Origin matches the backend's `FRONTEND_ORIGIN`. The session cookie is `HttpOnly` and scoped to `/api/v1`; it is never stored in browser storage. The portal waits for `/auth/me` before rendering its workspace. It rechecks sessions on navigation, focus, and browser-history restoration, and clears private query data on authentication failures and successful logout.
+
+Start `npm run test:auth-server` in the backend repository to use a disposable MongoDB replica set and the actual authentication routes. This verification path does not need Atlas or a local `.env`. With the backend fixture running, execute:
+
+```bash
+AUTH_E2E_EMAIL=browser-test@example.test \
+AUTH_E2E_PASSWORD=fictional-browser-verification-only \
+npm run test:e2e -- --workers=2
+```
+
+The suite checks private cookies, login failures, safe redirects, direct navigation, refresh, session revocation, sign-out/Back navigation, keyboard interaction, and layout at 360, 768, 1024, and 1440 px. Without the two test credential variables, authentication integration cases are explicitly skipped; the login and component-gallery tests still run.
+
+For everyday development, configure the backend `.env` with a persistent MongoDB URI and administrator seed credentials, run its seed command, and start the backend normally. `.env` and `.env.local` are ignored by Git.

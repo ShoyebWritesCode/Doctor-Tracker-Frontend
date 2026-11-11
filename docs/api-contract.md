@@ -51,7 +51,7 @@ The API client always uses `credentials: "include"`. It never reads, stores, or 
 - Absolute session duration: 12 hours.
 - Cookie is `HttpOnly`; `Secure` in production; `SameSite=Lax`; path `/api/v1`; no Domain attribute.
 - Login success seeds the current-user query and redirects to a validated internal `next` path or `/dashboard`.
-- Middleware may redirect when the cookie is absent, but `/auth/me` is authoritative.
+- The session cookie uses `Path=/api/v1`, so browsers do not send it to page routes. The portal layout's client session boundary checks `/auth/me` before displaying the workspace; there is no cookie-presence redirect in Next.js Proxy. API routes remain the authorization boundary. Future Server Components must not include private data without their own authoritative session check.
 - A `401` clears private query data and returns to `/login?next=<safe-relative-path>`.
 - Logout calls the API, clears private query data, and returns to login.
 - Tokens are never stored in localStorage, sessionStorage, React state, or logs.
