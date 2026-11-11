@@ -10,6 +10,7 @@ import { TextField } from "@/components/ui/text-field";
 import { authKeys, login } from "@/features/auth/api";
 import { safeNextPath } from "@/features/auth/safe-redirect";
 import { ApiError } from "@/lib/api/client";
+import { useHydrated } from "@/lib/use-hydrated";
 
 const credentialsSchema = z.object({
   email: z.string().trim().pipe(z.email("Enter a valid email address.")),
@@ -20,6 +21,7 @@ const credentialsSchema = z.object({
 });
 
 export function LoginForm() {
+  const hydrated = useHydrated();
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -66,7 +68,7 @@ export function LoginForm() {
         : undefined;
 
   return (
-    <form className="grid gap-5" noValidate onSubmit={submit}>
+    <form className="grid gap-5" method="post" noValidate onSubmit={submit}>
       {message ? (
         <div
           className="rounded-control border-danger/30 bg-danger-soft text-danger border p-3 text-sm"
@@ -118,10 +120,13 @@ export function LoginForm() {
           </p>
         ) : null}
       </div>
-      <Button className="w-full" loading={mutation.isPending} type="submit">
+      <Button className="w-full" disabled={!hydrated} loading={mutation.isPending} type="submit">
         <LockKeyhole aria-hidden="true" className="size-4" />
         Sign in
       </Button>
+      {!hydrated ? (
+        <p className="text-ink-muted text-sm">Enable JavaScript to sign in securely.</p>
+      ) : null}
     </form>
   );
 }

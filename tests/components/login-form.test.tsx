@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { LoginForm } from "@/features/auth/login-form";
+import { renderToString } from "react-dom/server";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh: vi.fn(), replace: vi.fn() }),
@@ -10,6 +11,16 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("LoginForm", () => {
+  it("disables native submission before hydration and never uses a credential-bearing GET", () => {
+    const html = renderToString(
+      <QueryClientProvider client={new QueryClient()}>
+        <LoginForm />
+      </QueryClientProvider>,
+    );
+    const document = new DOMParser().parseFromString(html, "text/html");
+    expect(document.querySelector("form")?.getAttribute("method")).toBe("post");
+    expect(document.querySelector('button[type="submit"]')?.hasAttribute("disabled")).toBe(true);
+  });
   it("uses visible credential labels and an accessible password visibility control", async () => {
     const user = userEvent.setup();
     render(
